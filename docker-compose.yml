@@ -1,0 +1,70 @@
+# docker-compose.yml
+version: '3.8' # Specify docker-compose version
+
+services:
+  # Backend Service (FastAPI)
+  backend:
+    build:
+      context: ./backend # Path to the directory containing the Dockerfile
+      dockerfile: Dockerfile
+    container_name: todo_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload # Run FastAPI with Uvicorn, accessible externally, with hot-reloading
+    volumes:
+      - ./backend:/code # Mount the backend directory to /code inside the container for hot-reloading
+    ports:
+      - "8000:8000" # Map port 8000 on the host to port 8000 in the container
+    env_file:
+      - ./backend/.env # Load environment variables from this file
+    depends_on:
+      db: # Ensure the database service starts before the backend
+        condition: service_healthy # Wait until the DB is healthy
+    networks:
+      - todo_network
+
+  # Frontend Service (React/Vite Dev Server)
+  frontend:
+    build:
+      context: ./frontend # Path to the directory containing the Dockerfile
+      dockerfile: Dockerfile
+    container_name: todo_frontend
+    volumes:
+      - ./frontend:/app # Mount the frontend directory to /app inside the container
+      - /app/node_modules # Use the node_modules installed in the container, not the host's
+    ports:
+      - "5173:5173" # Map Vite's default port 5173 on the host to 5173 in the container
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Helps with file watching in Docker volumes on some systems
+      # REMOVED VITE_API_BASE_URL from here - Vite will use the .env file value
+    depends_on:
+      - backend # Depends on the backend being available
+    networks:
+      - todo_network
+    stdin_open: true # Keep stdin open for interactive processes (like Vite)
+    tty: true        # Allocate a pseudo-TTY (needed for Vite)
+
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine # Use official PostgreSQL 15 image (Alpine version is smaller)
+    container_name: todo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/ # Persist database data using a named volume
+    env_file:
+      - ./backend/.env # Load DB credentials from the backend's .env file
+    ports:
+      - "5432:5432" # Map port 5432 on the host (optional, for external DB tools)
+    healthcheck: # Check if the database is ready to accept connections
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - todo_network
+
+# Volumes definition
+volumes:
+  postgres_data: # Define the named volume for database persistence
+
+# Networks definition
+networks:
+  todo_network: # Define a custom network for services to communicate
+    driver: bridge
