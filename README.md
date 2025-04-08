@@ -10,7 +10,7 @@ A simple yet complete full-stack web application for managing a list of tasks. T
 * **Delete Task:** Remove tasks permanently from the list.
 * **Persistence:** Tasks are stored in a PostgreSQL database.
 
-*(Potential Future Features: Edit task descriptions, due dates, filtering/sorting, user accounts, drag-and-drop reordering)*
+*(Potential Future Features: Edit task descriptions, due dates, filtering/sorting, user accounts, drag-and-drop reordering)* 
 
 ## Tech Stack
 
