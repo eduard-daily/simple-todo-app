@@ -8,7 +8,7 @@ A simple yet complete full-stack web application for managing a list of tasks. T
 * **Add Task:** Input field and button to add new tasks to the list.
 * **Mark as Complete:** Toggle the completion status of a task using a checkbox.
 * **Delete Task:** Remove tasks permanently from the list.
-* **Persistence:** Tasks are stored in a PostgreSQL database.
+* **Persistence:** Tasks are stored in a PostgreSQL database. 
 
 *(Potential Future Features: Edit task descriptions, due dates, filtering/sorting, user accounts, drag-and-drop reordering)* 
 
